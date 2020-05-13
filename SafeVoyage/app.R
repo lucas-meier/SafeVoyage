@@ -10,10 +10,9 @@
 library(shiny)
 library(shinythemes)
 
-# Define UI for application that draws a histogram
+# Define UI for application
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 
-
     # Application title
     titlePanel("SafeVoyage"),
 
@@ -21,32 +20,23 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
     sidebarLayout(
         sidebarPanel(
           tags$h3("Hello ! Where would you like to go ?"),
-          selectInput("selectcity","Select a city : ", "London"),
-          textInput("destination","Enter destination (Ex. Redbridge) : ","")
+          selectInput("selectcity","Select a city : ", choices = c( "","London")),
+          actionButton("run","Search",icon = NULL, width = '100px'),
+          actionButton("reset", "Reset", icon = NULL, width ='100px'),
+          hr()
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           leafletOutput("map", width = "100%", height = "400px")
         )
     )
 )
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw the output
 server <- function(input, output) {
+ 
     
-    output$distPlot <- renderPlot({
-    #########  ORIGINAL CODE  ##################    
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    #############################################
-        
-        
-        
     ###################  OUR CODE  ####################
         
         # load package
@@ -59,9 +49,10 @@ server <- function(input, output) {
         library(tidyverse)
         library(jtools)
         
+        
         register_google(key = "AIzaSyDDAsx0G3_qDx30jqbcurxEbvJXo_9UrdI", write = TRUE)
         
-        #Number of crimes by location in London boroughs
+        # Number of crimes by location in London boroughs
         
         url_link = "https://www.finder.com/uk/london-crime-statistics"
         browseURL(url_link)
@@ -70,6 +61,7 @@ server <- function(input, output) {
             html_table()
         
         crime_rates_per_boroughs_df = as.data.frame(crime_rates_per_boroughs_table)
+        
         #head(crime_rates_per_boroughs_df)
         crime_rates_per_boroughs_df$Crime.count = str_replace(string = gsub(x = crime_rates_per_boroughs_df$Crime.count, pattern = "",
                                                                             replacement = ""), pattern = ",", ".") %>% as.numeric()
@@ -83,19 +75,20 @@ server <- function(input, output) {
                                         paste("<b>", crime_rates_per_boroughs_df$Borough.Name[i]," </b>"),
                                         crime_rates_per_boroughs_df$Crime.count[i])
         }
-        
-        # plot map
+       
+        output$map <- renderLeaflet({
+            
         leaflet(df) %>% addTiles() %>%
             addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5
             ) %>%
             addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
                                                                     sep = "</br>"), options = popupOptions(closeButton = F))
         
-        
+        })
 ##########################################################################################
         
-    })
-}
+    }
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
