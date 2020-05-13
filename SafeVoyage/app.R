@@ -8,21 +8,21 @@
 #
 
 library(shiny)
+library(shinythemes)
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("sandstone"),
+                
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("SafeVoyage"),
 
-    # Sidebar with a slider input for number of bins 
+    # Sidebar with all the different input possible 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+          tags$h3("Hello ! Where would you like to go ?"),
+          selectInput("selectcity","Select a city : ", "London"),
+          textInput("destination","Enter destination (Ex. Redbridge) : ","")
         ),
 
         # Show a plot of the generated distribution
@@ -34,7 +34,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    
     output$distPlot <- renderPlot({
     #########  ORIGINAL CODE  ##################    
         # generate bins based on input$bins from ui.R
