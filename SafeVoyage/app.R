@@ -9,6 +9,8 @@
 
 library(shiny)
 library(shinythemes)
+library(leaflet)
+
 
 # Define UI for application
 ui <- fluidPage(theme = shinytheme("sandstone"),
@@ -66,7 +68,7 @@ server <- function(input, output) {
         crime_rates_per_boroughs_df$Crime.count = str_replace(string = gsub(x = crime_rates_per_boroughs_df$Crime.count, pattern = "",
                                                                             replacement = ""), pattern = ",", ".") %>% as.numeric()
         
-        boroughs_coord = geocode(paste("London district", crime_rates_per_boroughs_df$Borough.Name))
+        boroughs_coord = geocode(paste("London district ", crime_rates_per_boroughs_df$Borough.Name))
         
         # define pop up content
         popup_content = list()
@@ -78,11 +80,13 @@ server <- function(input, output) {
        
         output$map <- renderLeaflet({
             
-        leaflet(df) %>% addTiles() %>%
-            addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5
-            ) %>%
-            addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
-                                                                    sep = "</br>"), options = popupOptions(closeButton = F))
+            # plot map
+            leaflet(df) %>% addTiles() %>%
+                addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5,
+                                 color = ifelse(crime_rates_per_boroughs_df$Crime.count >= 35, "darkred", ifelse(crime_rates_per_boroughs_df$Crime.count < 35 & crime_rates_per_boroughs_df$Crime.count >= 25, "darkorange", "darkgreen"))   
+                ) %>%
+                addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
+                                                                        sep = "</br>"), options = popupOptions(closeButton = F))
         
         })
 ##########################################################################################
