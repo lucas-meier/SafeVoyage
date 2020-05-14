@@ -16,13 +16,15 @@ library(leaflet)
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 
     # Application title
-    titlePanel("SafeVoyage"),
-
+    titlePanel("SafeVoyage - Keeping you safe during your travels"),
+    tags$h5("Welcome to SafeVoyage, your place for all things safety while you travel."),
+    tags$h5("Have fun playing around with our website and stay tuned for further updates!"),
+    
     # Sidebar with all the different input possible 
     sidebarLayout(
         sidebarPanel(
-          tags$h3("Hello ! Where would you like to go ?"),
-          selectInput("selectcity","Select a location : ", choices = c( " ","London", "USA", "Global")),
+          tags$h3("Where would you like to go?"),
+          selectInput("selectcity","Access crime data for these destinations: ", choices = c( " ", "London", "USA", "Global")),
           actionButton("run","Search",icon = NULL, width = '100px'),
           actionButton("reset", "Reset", icon = NULL, width ='100px'),
           hr()
@@ -148,7 +150,7 @@ server <- function(input, output) {
                     # plot map USA
                     leaflet(df) %>% addTiles() %>%
                         addCircleMarkers(lng= uscities_coord$lon, lat=uscities_coord$lat, radius = as.numeric(crime_rates_per_us_city_df$Violent.crime)*0.04,
-                                         color = ifelse(crime_rates_per_us_city_df$Violent.crime >= 35*0.04, "darkred", ifelse(crime_rates_per_us_city_df$Violent.crime < 35*0.04 & crime_rates_per_us_city_df$Violent.crime >= 25*0.04, "darkorange", "darkgreen"))   
+                                         color = ifelse(crime_rates_per_us_city_df$Violent.crime >= 1500, "darkred", ifelse(crime_rates_per_us_city_df$Violent.crime < 1500 & crime_rates_per_us_city_df$Violent.crime >= 600, "darkorange", "darkgreen"))   
                         ) %>%
                         addPopups(uscities_coord$lon, uscities_coord$lat, paste(crime_rates_per_us_city_df$City, crime_rates_per_us_city_df$Violent.crime,
                                                                                 sep = "</br>"), options = popupOptions(closeButton = F))
@@ -162,7 +164,7 @@ server <- function(input, output) {
                     # plot map USA
                     leaflet(df) %>% addTiles() %>%
                         addCircleMarkers(lng= global_coord$lon, lat=global_coord$lat, radius = as.numeric(crime_rates_per_global_countries_df$Count)*0.06,
-                                         color = ifelse(crime_rates_per_global_countries_df$Count >= 35*0.06, "darkred", ifelse(crime_rates_per_global_countries_df$Count < 35*0.06 & crime_rates_per_global_countries_df$Count >= 25*0.06, "darkorange", "darkgreen"))   
+                                         color = ifelse(crime_rates_per_global_countries_df$Count >= 700, "darkred", ifelse(crime_rates_per_global_countries_df$Count < 700 & crime_rates_per_global_countries_df$Count >= 200, "darkorange", "darkgreen"))   
                         ) %>%
                         addPopups(global_coord$lon, global_coord$lat, paste(crime_rates_per_global_countries_df$Country..or.dependent.territory.subnational.area..etc.., crime_rates_per_global_countries_df$Count,
                                                                                 sep = "</br>"), options = popupOptions(closeButton = F))
