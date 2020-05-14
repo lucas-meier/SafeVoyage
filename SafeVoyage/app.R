@@ -22,7 +22,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
     sidebarLayout(
         sidebarPanel(
           tags$h3("Hello ! Where would you like to go ?"),
-          selectInput("selectcity","Select a city : ", choices = c( " ","London", "USA")),
+          selectInput("selectcity","Select a location : ", choices = c( " ","London", "USA", "Global")),
           actionButton("run","Search",icon = NULL, width = '100px'),
           actionButton("reset", "Reset", icon = NULL, width ='100px'),
           hr()
@@ -98,10 +98,35 @@ server <- function(input, output) {
                                         paste("<b>", crime_rates_per_us_city_df$City[i]," </b>"),
                                         crime_rates_per_us_city_df$Violent.crime[i])
         }
-        
-        (crime_rates_per_us_city_df)
-        
+
         ###########################################
+        
+        #Global
+        url_link = "https://en.wikipedia.org/wiki/List_of_countries_by_intentional_homicide_rate"
+        crime_rates_per_global_city_table = url_link  %>%
+            read_html()  %>%  html_nodes(xpath='//*[@id="UNODC"]') %>%
+            html_table(fill = T)
+        
+        crime_rates_per_global_countries_df = as.data.frame(crime_rates_per_global_city_table)
+        
+        (crime_rates_per_global_countries_df)
+        
+        crime_rates_per_global_countries_df$Count = str_replace(string = gsub(x = crime_rates_per_global_countries_df$Count, pattern = "",
+                                                                             replacement = ""), pattern = ",", ".") %>% as.numeric()
+        
+        
+        global_coord = geocode(crime_rates_per_global_countries_df$Country..or.dependent.territory.subnational.area..etc..)
+        
+        # define pop up content
+        popup_content = list()
+        for(i in seq(nrow(crime_rates_per_global_countries_df))){
+            popup_content[[i]] =  paste(sep = "<br/>",
+                                        paste("<b>", crime_rates_per_global_countries_df$Country..or.dependent.territory.subnational.area..etc..[i]," </b>"),
+                                        crime_rates_per_global_countries_df$Count[i])
+        }
+        
+        
+        ##########################################
         
         city <- reactiveVal(" ")
         
@@ -116,6 +141,7 @@ server <- function(input, output) {
                     addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
                                                                             sep = "</br>"), options = popupOptions(closeButton = F))
             
+            
             })}
             else if(input$selectcity == "USA") {
                 output$map <- renderLeaflet({
@@ -125,6 +151,20 @@ server <- function(input, output) {
                                          color = ifelse(crime_rates_per_us_city_df$Violent.crime >= 35*0.04, "darkred", ifelse(crime_rates_per_us_city_df$Violent.crime < 35*0.04 & crime_rates_per_us_city_df$Violent.crime >= 25*0.04, "darkorange", "darkgreen"))   
                         ) %>%
                         addPopups(uscities_coord$lon, uscities_coord$lat, paste(crime_rates_per_us_city_df$City, crime_rates_per_us_city_df$Violent.crime,
+                                                                                sep = "</br>"), options = popupOptions(closeButton = F))
+                    
+                })
+                
+            }
+            
+            else if(input$selectcity == "Global") {
+                output$map <- renderLeaflet({
+                    # plot map USA
+                    leaflet(df) %>% addTiles() %>%
+                        addCircleMarkers(lng= global_coord$lon, lat=global_coord$lat, radius = as.numeric(crime_rates_per_global_countries_df$Count)*0.06,
+                                         color = ifelse(crime_rates_per_global_countries_df$Count >= 35*0.06, "darkred", ifelse(crime_rates_per_global_countries_df$Count < 35*0.06 & crime_rates_per_global_countries_df$Count >= 25*0.06, "darkorange", "darkgreen"))   
+                        ) %>%
+                        addPopups(global_coord$lon, global_coord$lat, paste(crime_rates_per_global_countries_df$Country..or.dependent.territory.subnational.area..etc.., crime_rates_per_global_countries_df$Count,
                                                                                 sep = "</br>"), options = popupOptions(closeButton = F))
                     
                 })
