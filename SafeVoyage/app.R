@@ -18,13 +18,13 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
     # Application title
     titlePanel("SafeVoyage - Keeping you safe during your travels"),
     tags$h5("Welcome to SafeVoyage, your place for all things safety while you travel."),
-    tags$h5("Have fun playing around with our website and stay tuned for further updates!"),
+    tags$h5("Have fun playing around with our app and stay tuned for further updates!"),
     
     # Sidebar with all the different input possible 
     sidebarLayout(
         sidebarPanel(
           tags$h3("Where would you like to go?"),
-          selectInput("selectcity","Access crime data for these destinations: ", choices = c( " ", "London", "USA", "Global")),
+          selectInput("selectcity","Access crime data for the following destinations: ", choices = c( " ", "London", "USA", "Global")),
           actionButton("run","Search",icon = NULL, width = '100px'),
           actionButton("reset", "Reset", icon = NULL, width ='100px'),
           hr()
