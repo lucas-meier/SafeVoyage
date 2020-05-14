@@ -109,6 +109,7 @@ server <- function(input, output) {
        
         output$map <- renderLeaflet({
             
+            if (input$selectcity == "London") {
             # plot map London
             leaflet(df) %>% addTiles() %>%
                 addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5,
@@ -116,7 +117,9 @@ server <- function(input, output) {
                 ) %>%
                 addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
                                                                         sep = "</br>"), options = popupOptions(closeButton = F))
+            }
             
+            if (input$selectcity == "USA") {
             # plot map USA
             leaflet(df) %>% addTiles() %>%
                 addCircleMarkers(lng= uscities_coord$lon, lat=uscities_coord$lat, radius = as.numeric(crime_rates_per_us_city_df$Violent.crime)*0.04,
@@ -124,6 +127,7 @@ server <- function(input, output) {
                 ) %>%
                 addPopups(uscities_coord$lon, uscities_coord$lat, paste(crime_rates_per_us_city_df$City, crime_rates_per_us_city_df$Violent.crime,
                                                                         sep = "</br>"), options = popupOptions(closeButton = F))
+            }
         
         })
 ##########################################################################################
