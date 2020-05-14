@@ -22,7 +22,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
     sidebarLayout(
         sidebarPanel(
           tags$h3("Hello ! Where would you like to go ?"),
-          selectInput("selectcity","Select a city : ", choices = c( "","London")),
+          selectInput("selectcity","Select a city : ", choices = c( " ","London", "USA")),
           actionButton("run","Search",icon = NULL, width = '100px'),
           actionButton("reset", "Reset", icon = NULL, width ='100px'),
           hr()
@@ -103,32 +103,45 @@ server <- function(input, output) {
         
         ###########################################
         
+        city <- reactiveVal(" ")
         
-        
-        
-       
-        output$map <- renderLeaflet({
+        observeEvent(input$run,{
+            if(input$selectcity == "London"){
+            output$map <- renderLeaflet({
+                # plot map London
+                leaflet(df) %>% addTiles() %>%
+                    addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5,
+                                     color = ifelse(crime_rates_per_boroughs_df$Crime.count >= 35, "darkred", ifelse(crime_rates_per_boroughs_df$Crime.count < 35 & crime_rates_per_boroughs_df$Crime.count >= 25, "darkorange", "darkgreen"))   
+                    ) %>%
+                    addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
+                                                                            sep = "</br>"), options = popupOptions(closeButton = F))
             
-            # plot map London
-            leaflet(df) %>% addTiles() %>%
-                addCircleMarkers(lng= boroughs_coord$lon, lat=boroughs_coord$lat, radius = as.numeric(crime_rates_per_boroughs_df$Crime.count)*1.5,
-                                 color = ifelse(crime_rates_per_boroughs_df$Crime.count >= 35, "darkred", ifelse(crime_rates_per_boroughs_df$Crime.count < 35 & crime_rates_per_boroughs_df$Crime.count >= 25, "darkorange", "darkgreen"))   
-                ) %>%
-                addPopups(boroughs_coord$lon, boroughs_coord$lat, paste(crime_rates_per_boroughs_df$Borough.Name, crime_rates_per_boroughs_df$Crime.count,
-                                                                        sep = "</br>"), options = popupOptions(closeButton = F))
-            
-            # plot map USA
-            leaflet(df) %>% addTiles() %>%
-                addCircleMarkers(lng= uscities_coord$lon, lat=uscities_coord$lat, radius = as.numeric(crime_rates_per_us_city_df$Violent.crime)*0.04,
-                                 color = ifelse(crime_rates_per_us_city_df$Violent.crime >= 35*0.04, "darkred", ifelse(crime_rates_per_us_city_df$Violent.crime < 35*0.04 & crime_rates_per_us_city_df$Violent.crime >= 25*0.04, "darkorange", "darkgreen"))   
-                ) %>%
-                addPopups(uscities_coord$lon, uscities_coord$lat, paste(crime_rates_per_us_city_df$City, crime_rates_per_us_city_df$Violent.crime,
-                                                                        sep = "</br>"), options = popupOptions(closeButton = F))
-        
+            })}
+            else if(input$selectcity == "USA") {
+                output$map <- renderLeaflet({
+                    # plot map USA
+                    leaflet(df) %>% addTiles() %>%
+                        addCircleMarkers(lng= uscities_coord$lon, lat=uscities_coord$lat, radius = as.numeric(crime_rates_per_us_city_df$Violent.crime)*0.04,
+                                         color = ifelse(crime_rates_per_us_city_df$Violent.crime >= 35*0.04, "darkred", ifelse(crime_rates_per_us_city_df$Violent.crime < 35*0.04 & crime_rates_per_us_city_df$Violent.crime >= 25*0.04, "darkorange", "darkgreen"))   
+                        ) %>%
+                        addPopups(uscities_coord$lon, uscities_coord$lat, paste(crime_rates_per_us_city_df$City, crime_rates_per_us_city_df$Violent.crime,
+                                                                                sep = "</br>"), options = popupOptions(closeButton = F))
+                    
+                })
+                
+            }
         })
+        
+        observeEvent(input$reset,{
+            output$map <- renderLeaflet({
+                NULL
+            })
+        })
+        
+    
 ##########################################################################################
         
-    }
+}
 
 
 # Run the application 
