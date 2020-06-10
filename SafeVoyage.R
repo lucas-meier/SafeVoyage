@@ -13,7 +13,6 @@ register_google(key = "AIzaSyDDAsx0G3_qDx30jqbcurxEbvJXo_9UrdI", write = TRUE)
 
 #Number of crimes by location in London boroughs
 
-#ajout d'un commentaire
 
 url_link = "https://www.finder.com/uk/london-crime-statistics"
 browseURL(url_link)
